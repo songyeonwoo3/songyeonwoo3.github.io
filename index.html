@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEON DEFENDER</title>
+<style>
+:root{color-scheme:dark;--cyan:#48f4ff;--pink:#ff4fc8;--lime:#c8ff63}
+*{box-sizing:border-box}body{margin:0;background:#050711;color:#eef8ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#wrap{min-height:100svh;display:grid;place-items:center;padding:16px;background:radial-gradient(ellipse at 50% 100%,#14264b 0,transparent 55%),linear-gradient(135deg,#080b19,#11152b)}
+#game{width:min(1100px,100%);border:1px solid #294a69;border-radius:22px;overflow:hidden;background:#080d1b;box-shadow:0 0 55px #0b9fbb33}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 20px;background:#0c1428;border-bottom:1px solid #223c59}
+h1{font-size:clamp(18px,3vw,27px);letter-spacing:4px;margin:0;color:var(--cyan);text-shadow:0 0 18px #48f4ff88}
+.stats{display:flex;gap:18px;font-weight:800;font-size:14px}.stats span{color:var(--lime)}
+#stage{position:relative;background:linear-gradient(#0a1530,#101b35 70%,#17223b);height:min(66vh,620px);min-height:380px;overflow:hidden;cursor:crosshair;touch-action:manipulation}
+#stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#69dfff12 1px,transparent 1px),linear-gradient(90deg,#69dfff12 1px,transparent 1px);background-size:42px 42px;transform:perspective(350px) rotateX(58deg) scale(1.7);transform-origin:bottom;opacity:.6}
+#stars{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 15% 22%,#fff 50%,transparent),radial-gradient(1px 1px at 78% 18%,#8ff 50%,transparent),radial-gradient(2px 2px at 52% 42%,#fff 50%,transparent),radial-gradient(1px 1px at 90% 65%,#fff 50%,transparent);opacity:.7}
+.target{position:absolute;width:66px;height:66px;border:3px solid var(--cyan);border-radius:18px;background:radial-gradient(circle,#d5ffff 0 8%,#39dce8 10% 18%,#102b49 21% 55%,#09101f 58%);box-shadow:0 0 18px #48f4ff, inset 0 0 18px #48f4ff66;display:grid;place-items:center;animation:float 1.8s ease-in-out infinite alternate;cursor:crosshair}
+.target:before,.target:after{content:"";position:absolute;background:var(--pink);box-shadow:0 0 10px var(--pink)}.target:before{width:90px;height:2px}.target:after{height:90px;width:2px}
+.target b{z-index:1;font-size:20px;color:#fff;text-shadow:0 0 10px #fff}
+@keyframes float{to{transform:translateY(-13px) rotate(8deg)}}
+#beam{position:absolute;width:12px;height:110px;background:linear-gradient(transparent,#9effff,#fff);filter:drop-shadow(0 0 10px var(--cyan));bottom:0;left:50%;transform:translateX(-50%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);opacity:0;pointer-events:none}
+#beam.fire{animation:blast .22s ease-out}@keyframes blast{0%{opacity:1;transform:translateX(-50%) scaleY(.2)}100%{opacity:0;transform:translateX(-50%) scaleY(1.2)}}
+#overlay{position:absolute;inset:0;display:grid;place-items:center;background:#050914c9;text-align:center;padding:20px}
+.panel{max-width:440px;padding:28px;border:1px solid #3a6580;border-radius:20px;background:#0b1428ed;box-shadow:0 0 35px #22d9ff22}
+.panel h2{font-size:30px;color:var(--cyan);letter-spacing:3px;margin:0 0 10px}.panel p{line-height:1.65;color:#c4d5e8}
+button{border:0;border-radius:999px;padding:13px 25px;background:linear-gradient(90deg,#27c9e8,#7b8cff);color:#06101d;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 0 22px #39e9ff55}
+button:hover{filter:brightness(1.15);transform:translateY(-1px)}
+footer{display:flex;justify-content:space-between;gap:10px;padding:12px 18px;color:#93a9c1;font-size:12px}
+#toast{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-weight:900;color:var(--lime);text-shadow:0 0 12px var(--lime);pointer-events:none}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.stats{width:100%;justify-content:space-between}.target{width:58px;height:58px}footer{font-size:10px}}
+</style>
+</head>
+<body><div id="wrap"><main id="game">
+<header><h1>✦ NEON DEFENDER</h1><div class="stats"><div>SCORE <span id="score">0</span></div><div>TIME <span id="time">30</span>s</div><div>BEST <span id="best">0</span></div></div></header>
+<section id="stage" aria-label="게임 화면"><div id="stars"></div><div id="beam"></div><div id="toast"></div>
+<div id="overlay"><div class="panel"><h2>NEON DEFENDER</h2><p>네온 훈련장에 나타나는 홀로그램 로봇을 맞혀 점수를 얻어 봐!<br>마우스 클릭 또는 화면 터치로 에너지 펄스를 발사해.<br><small>30초 동안 최대한 많은 표적을 맞혀 보자!</small></p><button id="start">게임 시작</button></div></div>
+</section><footer><span>조작: 클릭 / 터치</span><span>홀로그램 표적 훈련 · 폭력적 묘사 없는 아케이드 게임</span></footer>
+</main></div>
+<script>
+const stage=document.querySelector('#stage'),overlay=document.querySelector('#overlay'),scoreEl=document.querySelector('#score'),timeEl=document.querySelector('#time'),bestEl=document.querySelector('#best'),beam=document.querySelector('#beam'),toast=document.querySelector('#toast');
+let score=0,time=30,active=false,timer=null,target=null,best=Number(localStorage.getItem('neonBest')||0);
+bestEl.textContent=best;
+function spawn(){if(target)target.remove();target=document.createElement('div');target.className='target';target.innerHTML='<b>✦</b>';const pad=18,maxX=stage.clientWidth-82,maxY=stage.clientHeight-100;target.style.left=(pad+Math.random()*Math.max(1,maxX-pad))+'px';target.style.top=(pad+Math.random()*Math.max(1,maxY-pad))+'px';target.addEventListener('pointerdown',e=>{e.stopPropagation();hit()});stage.appendChild(target)}
+function hit(){if(!active||!target)return;score+=10;scoreEl.textContent=score;toast.textContent='+10';beam.classList.remove('fire');void beam.offsetWidth;beam.classList.add('fire');spawn()}
+function end(){active=false;clearInterval(timer);if(target)target.remove();target=null;best=Math.max(best,score);localStorage.setItem('neonBest',best);bestEl.textContent=best;overlay.style.display='grid';overlay.querySelector('h2').textContent='훈련 완료!';overlay.querySelector('p').innerHTML='최종 점수 <b style="color:#c8ff63">'+score+'</b>점!<br>다시 도전해서 기록을 세워 봐.';overlay.querySelector('button').textContent='다시 시작'}
+function start(){score=0;time=30;active=true;scoreEl.textContent=score;timeEl.textContent=time;overlay.style.display='none';toast.textContent='';spawn();clearInterval(timer);timer=setInterval(()=>{time--;timeEl.textContent=time;if(time<=0)end()},1000)}
+document.querySelector('#start').addEventListener('click',start);
+stage.addEventListener('pointerdown',e=>{if(!active||e.target===target)return;toast.textContent='표적을 클릭해 봐!'});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&active){e.preventDefault();beam.classList.remove('fire');void beam.offsetWidth;beam.classList.add('fire')}});
+</script></body></html>
